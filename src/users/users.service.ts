@@ -2,8 +2,11 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { CreateAccountInput } from "./dtos/create-account.dto";
+import * as jwt from 'jsonwebtoken'
 import { LoginInput } from "./dtos/login.dto";
 import { User } from "./entities/user.entity";
+import { ConfigService } from "@nestjs/config";
+import { JwtService } from "src/jwt/jwt.service";
 
  
 
@@ -11,7 +14,8 @@ import { User } from "./entities/user.entity";
 
  export class UsersService{
      constructor(
-         @InjectRepository(User) private readonly users:Repository<User>
+         @InjectRepository(User) private readonly users:Repository<User>,
+         private readonly jwtService:JwtService
      ){}
 
 
@@ -73,6 +77,13 @@ import { User } from "./entities/user.entity";
                 }
             }
 
+            const token = this.jwtService.sign(user.id)
+
+            return{
+                ok:true,
+                token
+            }
+
         }catch(error){
             return{
                 ok:false , 
@@ -80,5 +91,10 @@ import { User } from "./entities/user.entity";
             }
         }
 
+     }
+
+
+     async findById(id:number): Promise<User>{
+         return this.users.findOneBy({id})
      }
  }
